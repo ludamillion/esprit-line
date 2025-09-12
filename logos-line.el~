@@ -30,8 +30,8 @@
 (defcustom logos-line-segments
   '((
 		 logos-line-segment-status-indicator
-     ;; logos-line-segment-vc
-     ;; logos-line-segment-buffer-name
+     logos-line-segment-vc
+     logos-line-segment-buffer-name
      ;; logos-line-segment-position
 		 )
     (
