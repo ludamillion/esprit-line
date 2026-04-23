@@ -1,4 +1,4 @@
-;;; logos-line-segments.el --- The segments for logos-line -*- lexical-binding: t; -*-
+;;; esprit-line-segments.el --- The segments for esprit-line -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2021  Eder Elorriaga
 
@@ -17,14 +17,14 @@
 
 ;;; Commentary:
 
-;; The segments for logos-line
+;; The segments for esprit-line
 
 ;;; Code:
 
 (require 'subr-x)
 (require 'nerd-icons)
 
-(defun logos-line-make-mouse-map (mouse function)
+(defun esprit-line-make-mouse-map (mouse function)
   "Return a keymap with single entry for mouse key MOUSE on the mode line.
 MOUSE is defined to run function FUNCTION with no args in the buffer
 corresponding to the mode line clicked."
@@ -32,43 +32,43 @@ corresponding to the mode line clicked."
     (define-key map (vector 'mode-line mouse) function)
     map))
 
-(defun logos-line--star-buffer-p (buffer)
+(defun esprit-line--star-buffer-p (buffer)
   "Return t if BUFFER is a star buffer i.e. *Messages*."
-	(string-match-p (rx "*" (0+ nonl) "*") (buffer-name buffer)))
+  (string-match-p (rx "*" (0+ nonl) "*") (buffer-name buffer)))
 
-(defun logos-line--status-indicator-face (read-only modified)
+(defun esprit-line--status-indicator-face (read-only modified)
   "Return face for the status indicator given the values of READ-ONLY and MODIFIED."
-	(let ((status (cond (read-only "error")
-											(modified "modified")
-											(t "info"))))
-		(intern (concat "logos-line-status-" status))))
+  (let ((status (cond (read-only "error")
+		      (modified "modified")
+		      (t "info"))))
+    (intern (concat "esprit-line-status-" status))))
 
-(defun logos-line--status-indicator-icon (read-only modified)
+(defun esprit-line--status-indicator-icon (read-only modified)
   "Return 'icon' for the status indicator given the values of READ-ONLY and MODIFIED."
-	(cond (read-only (nerd-icons-mdicon "nf-md-file_lock_outline"))
-				(modified (nerd-icons-mdicon "nf-md-asterisk"))
-				(t (or (nerd-icons-icon-for-mode major-mode) (nerd-icons-mdicon "nf-md-tortoise")))))
+  (cond (read-only (nerd-icons-mdicon "nf-md-file_lock_outline"))
+	(modified (nerd-icons-mdicon "nf-md-asterisk"))
+	(t (nerd-icons-mdicon "nf-md-creation"))))
 
-(defun logos-line-segment-status-indicator ()
+(defun esprit-line-segment-status-indicator ()
   "Displays a color-coded buffer modification/read-only indicator in the mode-line."
-  (if (not (logos-line--star-buffer-p (current-buffer)))
+  (if (not (esprit-line--star-buffer-p (current-buffer)))
       (let* ((read-only (and buffer-read-only (buffer-file-name)))
              (modified (buffer-modified-p))
-						 (padding logos-line-padding)
-             (status-face (logos-line--status-indicator-face read-only modified))
-						 (top (propertize " " 'face status-face 'display `(raise ,(car padding))))
-						 (bot (propertize " " 'face status-face 'display `(raise ,(- (cdr padding))))))
+	     (padding esprit-line-padding)
+             (status-face (esprit-line--status-indicator-face read-only modified))
+	     (top (propertize " " 'face status-face 'display `(raise ,(car padding))))
+	     (bot (propertize " " 'face status-face 'display `(raise ,(- (cdr padding))))))
         (concat top
-				        (propertize
-                 (logos-line--status-indicator-icon read-only modified)
+		(propertize
+                 (esprit-line--status-indicator-icon read-only modified)
                  'face `(:inherit ,status-face :family ,nerd-icons-font-family))
                 bot))))
 
-(defun logos-line-segment-buffer-name ()
+(defun esprit-line-segment-buffer-name ()
   "Displays the name of the current buffer in the mode-line."
-  (propertize "%b" 'face 'mode-line-buffer-id))
+  (propertize "%b " 'face 'esprit-line-status-info))
 
-(defun logos-line-segment-position ()
+(defun esprit-line-segment-position ()
   "Displays the current cursor position in the mode-line."
   `((line-number-mode
      ((column-number-mode
@@ -90,10 +90,10 @@ corresponding to the mode line clicked."
                      'font-lock-face 'font-lock-variable-name-face))))
 
 ;; 'help-echo (format "End-of-line style: %s\nmouse-1: Cycle" desc)
-(defun logos-line-segment-vc ()
-	"Displays color-coded version control information in the mode-line."
+(defun esprit-line-segment-vc ()
+  "Displays color-coded version control information in the mode-line."
 
-	(when vc-mode
+  (when vc-mode
     (when-let* ((file (buffer-file-name))
                 (branch (substring-no-properties vc-mode 5))
                 (state (vc-state file)))
@@ -101,24 +101,24 @@ corresponding to the mode line clicked."
                   'help-echo (format "%s, %s" (substring-no-properties vc-mode 5) state)
                   'face 'mode-line))))
 
-(defvar logos-line-segment-encoding-map
+(defvar esprit-line-segment-encoding-map
   (let ((map (make-sparse-keymap)))
     (define-key map [mode-line mouse-1]
                 (lambda (e)
-	                (interactive "e")
-	                (with-selected-window (posn-window (event-start e))
-	                  (when (and enable-multibyte-characters
-		                           buffer-file-coding-system)
-	                    (describe-coding-system buffer-file-coding-system)))))
+	          (interactive "e")
+	          (with-selected-window (posn-window (event-start e))
+	            (when (and enable-multibyte-characters
+		               buffer-file-coding-system)
+	              (describe-coding-system buffer-file-coding-system)))))
     (define-key map [mode-line mouse-3]
                 (lambda (e)
-	                (interactive "e")
-	                (with-selected-window (posn-window (event-start e))
-	                  (call-interactively #'set-buffer-file-coding-system))))
+	          (interactive "e")
+	          (with-selected-window (posn-window (event-start e))
+	            (call-interactively #'set-buffer-file-coding-system))))
     (purecopy map))
-  "Local keymap for the coding-system part of the logos-line.")
+  "Local keymap for the coding-system part of the esprit-line.")
 
-(defun logos-line-segment-encoding ()
+(defun esprit-line-segment-encoding ()
   "Displays the encoding style of the buffer in the mode-line."
   `(" "
     ,(propertize
@@ -132,9 +132,9 @@ corresponding to the mode line clicked."
                       (symbol-name buffer-file-coding-system))
             "Buffer coding system: none specified")))
       'mouse-face 'mode-line-highlight
-      'local-map logos-line-segment-encoding-map)))
+      'local-map esprit-line-segment-encoding-map)))
 
-(defun logos-line-segment-eol ()
+(defun esprit-line-segment-eol ()
   "Displays the EOL style of the current buffer in the mode-line."
   (let* ((eol (coding-system-eol-type buffer-file-coding-system))
          (mnemonic (pcase eol
@@ -151,7 +151,7 @@ corresponding to the mode line clicked."
      mnemonic
      'help-echo (format "End-of-line style: %s\nmouse-1: Cycle" desc)
      'local-map (purecopy
-                 (logos-line-make-mouse-map
+                 (esprit-line-make-mouse-map
                   'mouse-1
                   (lambda (event)
                     (interactive "e")
@@ -161,13 +161,13 @@ corresponding to the mode line clicked."
                          (cond ((eq eol 0) 'dos) ((eq eol 1) 'mac) (t 'unix))))))))
      'mouse-face 'mode-line-highlight)))
 
-(defun logos-line-segment-misc-info ()
+(defun esprit-line-segment-misc-info ()
   "Displays the current value of `mode-line-misc-info' in the mode-line."
-  (let ((misc-info (string-trim (format-mode-line mode-line-misc-info 'logos-line-unimportant))))
+  (let ((misc-info (string-trim (format-mode-line mode-line-misc-info 'esprit-line-unimportant))))
     (unless (string= misc-info "")
       (concat " " misc-info))))
 
-(defun logos-line-segment-input-method ()
+(defun esprit-line-segment-input-method ()
   "Displays the input-method of the buffer in the mode-line."
   `(""
     (current-input-method
@@ -176,7 +176,7 @@ corresponding to the mode line clicked."
                              "Current input method: %s\nmouse-1: Describe current input method"
                              current-input-method)
                   local-map ,(purecopy
-                              (logos-line-make-mouse-map
+                              (esprit-line-make-mouse-map
                                'mouse-1
                                (lambda (e)
                                  (interactive "e")
@@ -184,19 +184,19 @@ corresponding to the mode line clicked."
                                    (describe-current-input-method)))))
                   mouse-face 'mode-line-highlight))))
 
-(defun logos-line-segment-minor-modes ()
+(defun esprit-line-segment-minor-modes ()
   "Displays the current minor modes in the mode-line."
   (replace-regexp-in-string
    "%" "%%%%"
    (format-mode-line minor-mode-alist)
    t t))
 
-(defun logos-line-segment-process ()
+(defun esprit-line-segment-process ()
   "Displays the current value of `mode-line-process' in the mode-line."
   (when mode-line-process
     (concat " " (string-trim (format-mode-line mode-line-process)))))
 
-(defun logos-line-segment-major-mode ()
+(defun esprit-line-segment-major-mode ()
   "Displays the current major mode in the mode-line."
   (concat " "
           (or (and (boundp 'delighted-modes)
@@ -204,20 +204,21 @@ corresponding to the mode line clicked."
               (format-mode-line (nerd-icons-icon-for-mode major-mode)))
           " "))
 
-(defcustom logos-line-word-count-modes '(markdown-mode gfm-mode org-mode)
+(defcustom esprit-line-word-count-modes '(markdown-mode gfm-mode org-mode)
   "Major modes in which to display word count continuously."
   :type '(repeat (symbol :tag "Major-Mode") )
-  :group 'logos-line)
+  :group 'esprit-line)
 
-(defun logos-line-segment-word-count ()
-  "Display the buffer word count in the mode-line when in a major mode in `logos-line-word-count-modes'."
-  (if (member major-mode logos-line-word-count-modes)
+(defun esprit-line-segment-word-count ()
+  "Display the buffer word count in the mode-line when in a major mode in `esprit-line-word-count-modes'."
+  (if (member major-mode esprit-line-word-count-modes)
       (format " %dW" (count-words (point-min) (point-max)))))
 
 
 ;; (set-fontset-font t 'unicode (font-spec :name "Inconsolata Light" :size 16) nil)
 (set-fontset-font t '(#xe000 . #xf8ff) (font-spec :name nerd-icons-font-family) nil)
 (set-fontset-font t '(#xf0000 . #xfffff) (font-spec :name nerd-icons-font-family) nil)
+(set-fontset-font t '(#x100000 . #x10ffff) (font-spec :name nerd-icons-font-family) nil)
 
-(provide 'logos-line-segments)
-;;; logos-line-segments.el ends here
+(provide 'esprit-line-segments)
+;;; esprit-line-segments.el ends here
